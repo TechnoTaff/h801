@@ -39,11 +39,11 @@
 #include <string>
 
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>   // Local WebServer used to serve the configuration portal
+#include <ESP8266WebServer.h> // Local WebServer used to serve the configuration portal
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPUpdateServer.h>
-#include <WiFiManager.h>        // WiFi Configuration Magic
-#include <PubSubClient.h>       // MQTT client
+#include <WiFiManager.h> // WiFi Configuration Magic
+#include <PubSubClient.h> // MQTT client
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
@@ -64,47 +64,44 @@ const char* password = "homeassistant";
 
 // MQTT topics
 // state, brightness, rgb
-const char* MQTT_UP = "active";
-char* MQTT_LIGHT_RGB_STATE_TOPIC = "XXXXXXXX/rgb/light/status";
-char* MQTT_LIGHT_RGB_COMMAND_TOPIC = "XXXXXXXX/rgb/light/switch";
-char* MQTT_LIGHT_RGB_BRIGHTNESS_STATE_TOPIC = "XXXXXXXX/rgb/brightness/status";
-char* MQTT_LIGHT_RGB_BRIGHTNESS_COMMAND_TOPIC = "XXXXXXXX/rgb/brightness/set";
-char* MQTT_LIGHT_RGB_RGB_STATE_TOPIC = "XXXXXXXX/rgb/rgb/status";
-char* MQTT_LIGHT_RGB_RGB_COMMAND_TOPIC = "XXXXXXXX/rgb/rgb/set";
+const char * MQTT_UP = "active";
+char * MQTT_LIGHT_RGB_STATE_TOPIC = "XXXXXXXX/rgb/light/status";
+char * MQTT_LIGHT_RGB_COMMAND_TOPIC = "XXXXXXXX/rgb/light/switch";
+char * MQTT_LIGHT_RGB_BRIGHTNESS_STATE_TOPIC = "XXXXXXXX/rgb/brightness/status";
+char * MQTT_LIGHT_RGB_BRIGHTNESS_COMMAND_TOPIC = "XXXXXXXX/rgb/brightness/set";
+char * MQTT_LIGHT_RGB_RGB_STATE_TOPIC = "XXXXXXXX/rgb/rgb/status";
+char * MQTT_LIGHT_RGB_RGB_COMMAND_TOPIC = "XXXXXXXX/rgb/rgb/set";
 
-char* MQTT_LIGHT_RGB_EFFECT_COMMAND_TOPIC = "XXXXXXXX/rgb/effect/set";
-char* MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC = "XXXXXXXX/rgb/effect/status";
+char * MQTT_LIGHT_RGB_EFFECT_COMMAND_TOPIC = "XXXXXXXX/rgb/effect/set";
+char * MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC = "XXXXXXXX/rgb/effect/status";
 
-char* MQTT_LIGHT_WW_STATE_TOPIC = "XXXXXXXX/ww/light/status";
-char* MQTT_LIGHT_WW_COMMAND_TOPIC = "XXXXXXXX/ww/light/switch";
-char* MQTT_LIGHT_WW_BRIGHTNESS_COMMAND_TOPIC = "XXXXXXXX/ww/brightness/set";
-char* MQTT_LIGHT_WW_BRIGHTNESS_STATE_TOPIC = "XXXXXXXX/ww/brightness/status";
-char* MQTT_LIGHT_WW_COLOR_TEMP_STATE_TOPIC =  "XXXXXXXX/ww/colortemp/status";
-char* MQTT_LIGHT_WW_COLOR_TEMP_COMMAND_TOPIC =  "XXXXXXXX/ww/colortemp/set";
+char * MQTT_LIGHT_WW_STATE_TOPIC = "XXXXXXXX/ww/light/status";
+char * MQTT_LIGHT_WW_COMMAND_TOPIC = "XXXXXXXX/ww/light/switch";
+char * MQTT_LIGHT_WW_BRIGHTNESS_COMMAND_TOPIC = "XXXXXXXX/ww/brightness/set";
+char * MQTT_LIGHT_WW_BRIGHTNESS_STATE_TOPIC = "XXXXXXXX/ww/brightness/status";
+char * MQTT_LIGHT_WW_COLOR_TEMP_STATE_TOPIC = "XXXXXXXX/ww/colortemp/status";
+char * MQTT_LIGHT_WW_COLOR_TEMP_COMMAND_TOPIC = "XXXXXXXX/ww/colortemp/set";
 
-
-char* chip_id = "00000000";
-char* myhostname = "esp00000000";
+char * chip_id = "00000000";
+char * myhostname = "esp00000000";
 
 // buffer used to send/receive data with MQTT
 const uint8_t MSG_BUFFER_SIZE = 20;
 char m_msg_buffer[MSG_BUFFER_SIZE];
 
-
 // Light
 // the payload that represents enabled/disabled state, by default
-const char* LIGHT_ON = "ON";
-const char* LIGHT_OFF = "OFF";
+const char * LIGHT_ON = "ON";
+const char * LIGHT_OFF = "OFF";
 
+#define RGB_LIGHT_RED_PIN 15
+#define RGB_LIGHT_GREEN_PIN 13
+#define RGB_LIGHT_BLUE_PIN 12
+#define W1_PIN 14
+#define W2_PIN 4
 
-#define RGB_LIGHT_RED_PIN    15
-#define RGB_LIGHT_GREEN_PIN  13
-#define RGB_LIGHT_BLUE_PIN   12
-#define W1_PIN               14
-#define W2_PIN               4
-
-#define GREEN_PIN    1
-#define RED_PIN      5
+# define GREEN_PIN 1
+# define RED_PIN 5
 
 // store the state of the rgb light (colors, brightness, ...)
 boolean m_rgb_state = false;
@@ -124,15 +121,14 @@ uint16_t m_ww_colortemp = 327;
 unsigned long previousMillis = 0;
 unsigned long currentMillis = 0;
 
-void setup()
-{
+void setup() {
   pinMode(RGB_LIGHT_RED_PIN, OUTPUT);
   pinMode(RGB_LIGHT_GREEN_PIN, OUTPUT);
   pinMode(RGB_LIGHT_BLUE_PIN, OUTPUT);
   setColor(0, 0, 0);
   pinMode(W1_PIN, OUTPUT);
   pinMode(W2_PIN, OUTPUT);
-  setWW(0,m_ww_colortemp);
+  setWW(0, m_ww_colortemp);
 
   pinMode(GREEN_PIN, OUTPUT);
   pinMode(RED_PIN, OUTPUT);
@@ -154,13 +150,13 @@ void setup()
 
   wifiManager.setTimeout(3600);
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
-  wifiManager.addParameter(&custom_mqtt_server);
+  wifiManager.addParameter( & custom_mqtt_server);
   WiFiManagerParameter custom_password("password", "password for updates", password, 40);
-  wifiManager.addParameter(&custom_password);
+  wifiManager.addParameter( & custom_password);
   WiFiManagerParameter custom_mqtt_user("mqttuser", "mqtt user", mqtt_user, 40);
-  wifiManager.addParameter(&custom_mqtt_user);
+  wifiManager.addParameter( & custom_mqtt_user);
   WiFiManagerParameter custom_mqtt_pass("mqttpass", "mqtt pass", mqtt_pass, 40);
-  wifiManager.addParameter(&custom_mqtt_pass);
+  wifiManager.addParameter( & custom_mqtt_pass);
   wifiManager.setCustomHeadElement(chip_id);
   wifiManager.autoConnect();
 
@@ -201,7 +197,7 @@ void setup()
   // do not start OTA server if no password has been set
   if (password != "") {
     MDNS.begin(myhostname);
-    httpUpdater.setup(&httpServer,username,password);
+    httpUpdater.setup( & httpServer, username, password);
     httpServer.begin();
     MDNS.addService("http", "tcp", 80);
   }
@@ -214,41 +210,33 @@ void setColor(uint8_t p_red, uint8_t p_green, uint8_t p_blue) {
   analogWrite(RGB_LIGHT_BLUE_PIN, map(p_blue, 0, 255, 0, m_rgb_brightness));
 }
 
-
-//void setWW(uint8_t brightness) {
-//  // convert the brightness in % (0-100%) into a digital value (0-255)
-//  analogWrite(W1_PIN, brightness);
-//  analogWrite(W2_PIN, brightness);
-//}
-
-
-void setWW(uint8_t brightness, uint16_t mired){
+void setWW(uint8_t brightness, uint16_t mired) {
   uint8_t w1val;
   uint8_t w2val;
 
-   // quick and dirty mireds to 0-255 W1/W2 values (1.474 is rough multiplier)
-   // MIRED << 154 ----------------------- 327 ----------------------- 500 >>
-   // W1    << 255 ----------------------- 255 ----------------------- 0   >>
-   // W2    <<   0 ----------------------- 255 ----------------------- 255 >>
-   
-  if (mired >= 327  && mired <=500 ) {
-     // warmer
-     w2val = 255;
-     w1val = int(255 - float( float( mired - 327 ) * 1.474)) ;
-  } else if (mired < 327 && mired >=0) {
+  // quick and dirty mireds to 0-255 W1/W2 values (1.474 is rough multiplier)
+  // MIRED << 154 ----------------------- 327 ----------------------- 500 >>
+  // W1    << 255 ----------------------- 255 ----------------------- 0   >>
+  // W2    <<   0 ----------------------- 255 ----------------------- 255 >>
+
+  if (mired >= 327 && mired <= 500) {
+    // warmer
+    w2val = 255;
+    w1val = int(255 - float(float(mired - 327) * 1.474));
+  } else if (mired < 327 && mired >= 0) {
     // cooler
     w1val = 255;
-    w2val = int(255 - float( float( 327 - mired ) * 1.474)) ;
+    w2val = int(255 - float(float(327 - mired) * 1.474));
   }
   // brightness divider
-  if (brightness > 0) { 
-    w1val = (w1val / float(255/brightness));
-    w2val = (w2val / float(255/brightness));
+  if (brightness > 0) {
+    w1val = map(w1val,0,255,0,brightness);
+    w2val = map(w2val,0,255,0,brightness);
   } else {
     w1val = 0;
     w2val = 0;
   }
-  
+
   analogWrite(W1_PIN, w1val);
   analogWrite(W2_PIN, w2val);
 
@@ -259,7 +247,7 @@ void publishRGBState() {
   if (m_rgb_state) {
     client.publish(MQTT_LIGHT_RGB_STATE_TOPIC, LIGHT_ON, true);
   } else {
-    client.publish(MQTT_LIGHT_RGB_STATE_TOPIC, LIGHT_OFF, true);
+    client.publish(MQTT_LIGHT_RGB_STATE_TOPIC, LIGHT_OFF, false);
   }
 }
 
@@ -288,32 +276,31 @@ void publishWWBrightness() {
   client.publish(MQTT_LIGHT_WW_BRIGHTNESS_STATE_TOPIC, m_msg_buffer, true);
 }
 
-void publishWWColortemp(){
+void publishWWColortemp() {
   snprintf(m_msg_buffer, MSG_BUFFER_SIZE, "%d", m_ww_colortemp);
-  client.publish(MQTT_LIGHT_WW_COLOR_TEMP_STATE_TOPIC, m_msg_buffer, true);  
+  client.publish(MQTT_LIGHT_WW_COLOR_TEMP_STATE_TOPIC, m_msg_buffer, true);
 }
 
-void publishEffectState(){
+void publishEffectState() {
   if (m_rgb_cycling) {
     client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "colorloop", true);
   } else {
-    client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "colorloop", false);
-    client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "none", true);
+    client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "", true);
+    // client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "none", true);
   }
-  client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "random", false);
+  // client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "random", false);
 }
 
-
 // function called when a MQTT message arrived
-void callback(char* p_topic, byte* p_payload, unsigned int p_length) {
+void callback(char * p_topic, byte * p_payload, unsigned int p_length) {
   // concat the payload into a string
   String payload;
   for (uint8_t i = 0; i < p_length; i++) {
-    payload.concat((char)p_payload[i]);
+    payload.concat((char) p_payload[i]);
   }
   //Serial1.println(String(p_topic));
   //Serial1.println(String(payload));
-  
+
   // handle message topic
   if (String(MQTT_LIGHT_RGB_COMMAND_TOPIC).equals(p_topic)) {
     // test if the payload is equal to "ON" or "OFF"
@@ -322,22 +309,25 @@ void callback(char* p_topic, byte* p_payload, unsigned int p_length) {
       setColor(m_rgb_red, m_rgb_green, m_rgb_blue);
       publishRGBState();
     } else if (payload.equals(String(LIGHT_OFF))) {
+      m_rgb_cycling = false;
+      publishEffectState();
       m_rgb_state = false;
       setColor(0, 0, 0);
       publishRGBState();
+
     }
-  }  else if (String(MQTT_LIGHT_WW_COMMAND_TOPIC).equals(p_topic)) {
+  } else if (String(MQTT_LIGHT_WW_COMMAND_TOPIC).equals(p_topic)) {
     // test if the payload is equal to "ON" or "OFF"
     if (payload.equals(String(LIGHT_ON))) {
       m_ww_state = true;
-      setWW(m_ww_brightness,m_ww_colortemp);
+      setWW(m_ww_brightness, m_ww_colortemp);
       publishWWState();
     } else if (payload.equals(String(LIGHT_OFF))) {
       m_ww_state = false;
-      setWW(0,m_ww_colortemp);
+      setWW(0, m_ww_colortemp);
       publishWWState();
     }
-  }  else if (String(MQTT_LIGHT_RGB_BRIGHTNESS_COMMAND_TOPIC).equals(p_topic)) {
+  } else if (String(MQTT_LIGHT_RGB_BRIGHTNESS_COMMAND_TOPIC).equals(p_topic)) {
     uint8_t brightness = payload.toInt();
     if (brightness < 0 || brightness > 255) {
       // do nothing...
@@ -358,39 +348,37 @@ void callback(char* p_topic, byte* p_payload, unsigned int p_length) {
       publishWWBrightness();
     }
   } else if (String(MQTT_LIGHT_WW_COLOR_TEMP_COMMAND_TOPIC).equals(p_topic)) {
-      uint16_t colortemp = payload.toInt();
-      if (colortemp < 154 || colortemp > 500) {
-        // do nothing...
-        return;
-      } else {
-        m_ww_colortemp = colortemp;
-        setWW(m_ww_brightness, m_ww_colortemp);
-        publishWWColortemp();
-      }
-  } 
-  else if (String(MQTT_LIGHT_RGB_EFFECT_COMMAND_TOPIC).equals(p_topic)) {
-       if (payload.equals(String("colorloop"))){
-          m_rgb_cycling = true;
-          publishEffectState();
-       } else if (payload.equals(String("random"))) {
-          setRandomRGBcolor();
-       } else if (payload.equals(String("none"))) {
-          m_rgb_cycling = false;
-          publishEffectState();
-          publishRGBColor();
-       }
-  }
-  else if (String(MQTT_LIGHT_RGB_RGB_COMMAND_TOPIC).equals(p_topic)) {
+    uint16_t colortemp = payload.toInt();
+    if (colortemp < 154 || colortemp > 500) {
+      // do nothing...
+      return;
+    } else {
+      m_ww_colortemp = colortemp;
+      setWW(m_ww_brightness, m_ww_colortemp);
+      publishWWColortemp();
+    }
+  } else if (String(MQTT_LIGHT_RGB_EFFECT_COMMAND_TOPIC).equals(p_topic)) {
+    if (payload.equals(String("colorloop"))) {
+      m_rgb_cycling = true;
+      publishEffectState();
+    } else if (payload.equals(String("random"))) {
+      setRandomRGBcolor();
+    } else if (payload.equals(String("none"))) {
+      m_rgb_cycling = false;
+      publishEffectState();
+      publishRGBColor();
+    }
+  } else if (String(MQTT_LIGHT_RGB_RGB_COMMAND_TOPIC).equals(p_topic)) {
     // get the position of the first and second commas
     uint8_t firstIndex = payload.indexOf(',');
     uint8_t lastIndex = payload.lastIndexOf(',');
-    
+
     if (m_rgb_cycling) {
       m_rgb_cycling = false;
       publishEffectState();
       previousMillis = millis();
     }
-    
+
     uint8_t rgb_red = payload.substring(0, firstIndex).toInt();
     if (rgb_red < 0 || rgb_red > 255) {
       return;
@@ -421,52 +409,47 @@ void callback(char* p_topic, byte* p_payload, unsigned int p_length) {
   digitalWrite(GREEN_PIN, 1);
 }
 
-
 // rough function to turn 0-1530 value to colour on the spectrum
-void linearToRBGColor(uint16_t linearColor, uint8_t brightness = 255){
+void linearToRBGColor(uint16_t linearColor, uint8_t brightness = 255) {
   //break down the full range into 6 logical blocks (https://goo.gl/HknkN8)
-  uint8_t redBit;
-  uint8_t greenBit;
-  uint8_t blueBit;
-  
-  if (linearColor >=0 and  linearColor<=255){
+
+  if (linearColor > 0 && linearColor <= 255) {
     // slot 1
-    blueBit = 0;
-    greenBit = (linearColor % 256);
-    redBit = 255 - (linearColor % 256);
-  } else if (linearColor > 255 and linearColor <= 512){
+    m_rgb_blue = 0;
+    m_rgb_green = (linearColor % 256);
+    m_rgb_red = 256 - (linearColor % 256);
+  } else if (linearColor > 256 && linearColor < 512) {
     // slot 2
-    redBit = 0;
-    blueBit = (linearColor % 256);
-    greenBit = 255 - (linearColor % 256);
-  } else if (linearColor > 512 and linearColor <= 765){
+    m_rgb_red = 0;
+    m_rgb_blue = (linearColor % 256);
+    m_rgb_green = 256 - (linearColor % 256);
+  } else if (linearColor > 512 && linearColor < 768) {
     // slot 3
-    greenBit = 0;
-    redBit = (linearColor % 256);
-    blueBit = 255 - (linearColor % 256);
-  } else if (linearColor > 765 and linearColor <= 1020){
+    m_rgb_green = 0;
+    m_rgb_red = (linearColor % 256);
+    m_rgb_blue = 256 - (linearColor % 256);
+  } else if (linearColor > 768 && linearColor < 1024) {
     // slot 4
-    blueBit = 0;
-    greenBit = (linearColor % 256);
-    redBit = 255 - (linearColor % 256);
-  } else if (linearColor > 1020 and linearColor <= 1275){
+    m_rgb_blue = 0;
+    m_rgb_green = (linearColor % 256);
+    m_rgb_red = 256 - (linearColor % 256);
+  } else if (linearColor > 1024 && linearColor < 1280) {
     // slot 5
-    redBit = 0;
-    blueBit = (linearColor % 256);
-    greenBit = 255 - (linearColor % 256);
-  } else if (linearColor > 1275 and linearColor <= 1530){
+    m_rgb_red = 0;
+    m_rgb_blue = (linearColor % 256);
+    m_rgb_green = 256 - (linearColor % 256);
+  } else if (linearColor > 1280 && linearColor < 1536) {
     // slot 6
-    greenBit = 0;
-    redBit = (linearColor % 256);
-    blueBit = 255 - (linearColor % 256);
+    m_rgb_green = 0;
+    m_rgb_red = (linearColor % 256);
+    m_rgb_blue = 256 - (linearColor % 256);
   }
-  setColor(redBit, greenBit, blueBit);
-  m_rgb_red = redBit;
-  m_rgb_green = greenBit;
-  m_rgb_blue = blueBit;
+
+  setColor(m_rgb_red, m_rgb_green, m_rgb_blue);
+
 }
 
-void setRandomRGBcolor(){
+void setRandomRGBcolor() {
   m_rgb_cycling = false;
   publishEffectState();
   linearToRBGColor(int(random(1530)));
@@ -480,13 +463,13 @@ void reconnect() {
     if (client.connect(chip_id, mqtt_user, mqtt_pass)) {
       Serial1.println("connected");
       // blink 10 times green LED for success connected
-      for (int x=0; x < 10; x++){
+      for (int x = 0; x < 10; x++) {
         delay(100);
         digitalWrite(GREEN_PIN, 0);
         delay(100);
         digitalWrite(GREEN_PIN, 1);
       }
-      
+
       client.publish(MQTT_UP, chip_id);
       // Once connected, publish an announcement...
       // publish the initial values
@@ -511,7 +494,7 @@ void reconnect() {
       Serial1.print(mqtt_server);
       Serial1.println(" try again in 5 seconds");
       // Wait about 5 seconds (10 x 500ms) before retrying
-      for (int x=0; x < 10; x++){
+      for (int x = 0; x < 10; x++) {
         delay(400);
         digitalWrite(RED_PIN, 0);
         delay(100);
@@ -523,28 +506,26 @@ void reconnect() {
 
 uint16_t i = 0;
 
-void loop()
-{
+void loop() {
   // process OTA updates
   httpServer.handleClient();
-  
+
   i++;
   if (!client.connected()) {
     reconnect();
   }
   client.loop();
 
-
   // handling cycling effect:
 
   if (m_rgb_cycling) {
     currentMillis = millis();
-    if((unsigned long)(currentMillis - previousMillis) >= 200) {    
-      previousMillis = millis();  
+    if ((unsigned long)(currentMillis - previousMillis) >= 200) {
+      previousMillis = millis();
       // do colorloop effect here
       if (rgb_cycling_forward) {
         currentColor++;
-      } else{
+      } else {
         currentColor--;
       }
       if (currentColor > 1530) {
@@ -552,11 +533,11 @@ void loop()
         currentColor = 1530;
       } else if (currentColor <= 0) {
         rgb_cycling_forward = true;
-        currentColor = 1530;
+        currentColor = 0;
       }
       linearToRBGColor(currentColor);
     }
-    
+
   }
 
   // Post the full status to MQTT every 65535 cycles. This is roughly once a minute
@@ -571,5 +552,6 @@ void loop()
     publishWWState();
     publishWWBrightness();
     publishWWColortemp();
+    publishEffectState();
   }
 }
