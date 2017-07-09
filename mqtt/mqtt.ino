@@ -73,7 +73,7 @@ char * MQTT_LIGHT_RGB_RGB_STATE_TOPIC = "XXXXXXXX/rgb/rgb/status";
 char * MQTT_LIGHT_RGB_RGB_COMMAND_TOPIC = "XXXXXXXX/rgb/rgb/set";
 
 char * MQTT_LIGHT_RGB_EFFECT_COMMAND_TOPIC = "XXXXXXXX/rgb/effect/set";
-char * MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC = "XXXXXXXX/rgb/effect/status";
+char * MQTT_LIGHT_RGB_EFFECT_STATE_TOPIC = "XXXXXXXX/rgb/effect/status";
 
 char * MQTT_LIGHT_WW_STATE_TOPIC = "XXXXXXXX/ww/light/status";
 char * MQTT_LIGHT_WW_COMMAND_TOPIC = "XXXXXXXX/ww/light/switch";
@@ -182,7 +182,7 @@ void setup() {
   memcpy(MQTT_LIGHT_RGB_RGB_COMMAND_TOPIC, chip_id, 8);
 
   memcpy(MQTT_LIGHT_RGB_EFFECT_COMMAND_TOPIC, chip_id, 8);
-  memcpy(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, chip_id, 8);
+  memcpy(MQTT_LIGHT_RGB_EFFECT_STATE_TOPIC, chip_id, 8);
 
   memcpy(MQTT_LIGHT_WW_STATE_TOPIC, chip_id, 8);
   memcpy(MQTT_LIGHT_WW_COMMAND_TOPIC, chip_id, 8);
@@ -281,14 +281,17 @@ void publishWWColortemp() {
   client.publish(MQTT_LIGHT_WW_COLOR_TEMP_STATE_TOPIC, m_msg_buffer, true);
 }
 
-void publishEffectState() {
-  if (m_rgb_cycling) {
-    client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "colorloop", true);
+void publishEffectState(String target = "none") {
+
+  Serial1.println("Publishing effect : " + target);
+
+  if (target.equals ("colorloop")) {
+    client.publish(MQTT_LIGHT_RGB_EFFECT_STATE_TOPIC, "colorloop");    
+  } else if (target.equals ("random")) {
+      client.publish(MQTT_LIGHT_RGB_EFFECT_STATE_TOPIC, "random");
   } else {
-    client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "", true);
-    // client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "none", true);
+     client.publish(MQTT_LIGHT_RGB_EFFECT_STATE_TOPIC, "none", true);     
   }
-  // client.publish(MQTT_LIGHT_RGB_STATE_COMMAND_TOPIC, "random", false);
 }
 
 // function called when a MQTT message arrived
@@ -360,12 +363,14 @@ void callback(char * p_topic, byte * p_payload, unsigned int p_length) {
   } else if (String(MQTT_LIGHT_RGB_EFFECT_COMMAND_TOPIC).equals(p_topic)) {
     if (payload.equals(String("colorloop"))) {
       m_rgb_cycling = true;
-      publishEffectState();
+      publishEffectState(payload);
     } else if (payload.equals(String("random"))) {
+      publishEffectState(payload);
       setRandomRGBcolor();
+      publishEffectState("none");
     } else if (payload.equals(String("none"))) {
       m_rgb_cycling = false;
-      publishEffectState();
+      publishEffectState(payload);
       publishRGBColor();
     }
   } else if (String(MQTT_LIGHT_RGB_RGB_COMMAND_TOPIC).equals(p_topic)) {
